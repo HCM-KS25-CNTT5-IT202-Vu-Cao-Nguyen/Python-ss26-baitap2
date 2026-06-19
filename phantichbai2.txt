@@ -1,0 +1,39 @@
+
+Câu 1: Vòng lặp thể hiện tính Đa hình (Polymorphism) như thế nào?
+
+
+Vòng lặp `for hero in team_heroes: hero.use_ultimate()` thể hiện đa hình
+ở chỗ: cùng một lời gọi `hero.use_ultimate()`, nhưng Python tự động dispatch
+đến implementation đúng của từng lớp con tại runtime. `team_heroes` chứa các
+object thuộc các lớp khác nhau (Mage, Assassin), nhưng hệ thống không cần
+biết cụ thể loại nào — chỉ cần chúng đều có method `use_ultimate()`. Đây
+chính là Duck Typing: "Nếu nó đi như vịt và kêu như vịt, thì nó là vịt."
+
+
+Câu 2: Với code cũ (không dùng abc), lỗi văng ra vào khoảnh khắc nào?
+
+
+Với code cũ (không dùng abc), lỗi chỉ phát sinh đúng khoảnh khắc
+`hero.use_ultimate()` được gọi trên object Assassin trong vòng lặp —
+tức là giữa trận đấu. Lý do: Python không kiểm tra nội dung method khi
+khởi tạo object, `Assassin()` được tạo hoàn toàn hợp lệ vì nó kế thừa
+`use_ultimate()` từ Hero (dù method đó sẽ raise lỗi khi chạy). Việc báo
+lỗi muộn như vậy là thảm họa vì game đã load xong, người chơi đã vào trận,
+rồi đột ngột crash — trải nghiệm tệ nhất có thể xảy ra.
+
+Câu 3: Khi dùng abc + @abstractmethod, lỗi văng ra lúc nào?
+
+
+Lỗi sẽ văng ra lúc loading trận đấu — chính xác là tại dòng `Assassin()`
+khi khởi tạo object. Python sẽ ném TypeError ngay lập tức, không cho phép
+instantiate một class chưa implement đủ abstract methods. Game sẽ không bao
+giờ vào được trận đấu với một tướng "lỗi".
+
+Câu 4: Nguyên lý Fail Fast được thể hiện như thế nào?
+
+
+ABC áp dụng Fail Fast bằng cách chuyển lỗi từ runtime (giữa trận) sang
+instantiation time (lúc load). Developer phát hiện bug ngay khi chạy thử
+lần đầu, không phải sau khi user đã vào game. Trong kiến trúc game: thà
+crash ở màn loading còn hơn crash giữa trận — người chơi mất tiến trình,
+mất rage.
